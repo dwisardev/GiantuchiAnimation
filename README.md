@@ -6,6 +6,7 @@ Editor web de una mascota animada. Permite:
 - ajustar la distancia de cada movimiento;
 - reproducir una animación con rebote;
 - exportar la animación completa como un archivo GIF.
+- usar el escenario de oficina como fondo y desplazar la mascota sobre el piso.
 
 ## Uso
 

@@ -8,9 +8,12 @@ const playButton = document.querySelector("#play");
 const exportButton = document.querySelector("#export");
 const resetButton = document.querySelector("#reset");
 const status = document.querySelector("#status");
+const background = new Image();
+background.src = "Gemini_Generated_Image_.jpeg";
 
-const initial = { x: canvas.width / 2, y: canvas.height / 2 + 20 };
+const initial = { x: canvas.width / 2, y: 310 };
 const mascot = { ...initial };
+const floor = { top: 285, bottom: 390 };
 let animationFrame = null;
 let animationStart = 0;
 let isPlaying = false;
@@ -18,16 +21,26 @@ let isPlaying = false;
 function draw(time = 0, animated = isPlaying) {
   const { width, height } = canvas;
   ctx.clearRect(0, 0, width, height);
-  const gradient = ctx.createLinearGradient(0, 0, width, height);
-  gradient.addColorStop(0, "#272a52");
-  gradient.addColorStop(1, "#131629");
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, width, height);
+  if (background.complete && background.naturalWidth) {
+    const sourceHeight = background.naturalWidth / (width / height);
+    const sourceTop = Math.min(background.naturalHeight - sourceHeight, background.naturalHeight * 0.35);
+    ctx.drawImage(background, 0, sourceTop, background.naturalWidth, sourceHeight, 0, 0, width, height);
+  } else {
+    ctx.fillStyle = "#272a52";
+    ctx.fillRect(0, 0, width, height);
+  }
 
-  ctx.strokeStyle = "#ffffff0c";
-  ctx.lineWidth = 1;
-  for (let x = 0; x < width; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke(); }
-  for (let y = 0; y < height; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke(); }
+  const floorGradient = ctx.createLinearGradient(0, floor.top, 0, floor.bottom);
+  floorGradient.addColorStop(0, "#ffffff12");
+  floorGradient.addColorStop(1, "#38285a38");
+  ctx.fillStyle = floorGradient;
+  ctx.fillRect(0, floor.top, width, height - floor.top);
+  ctx.strokeStyle = "#ffffff45";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, floor.top);
+  ctx.lineTo(width, floor.top);
+  ctx.stroke();
 
   const animate = animated;
   const bounce = animate ? Math.sin(time / 100) * 5 : 0;
@@ -59,7 +72,7 @@ function move(direction) {
   if (direction === "left") mascot.x -= distance;
   if (direction === "right") mascot.x += distance;
   mascot.x = Math.max(bounds.x, Math.min(canvas.width - bounds.x, mascot.x));
-  mascot.y = Math.max(bounds.y, Math.min(canvas.height - bounds.y, mascot.y));
+  mascot.y = Math.max(floor.top - 5, Math.min(floor.bottom, mascot.y));
   draw();
   status.textContent = `Posición: ${Math.round(mascot.x)}, ${Math.round(mascot.y)}`;
 }
@@ -132,4 +145,5 @@ gifScript.src = "https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js";
 gifScript.onload = () => { status.textContent = "Listo para animar y exportar."; };
 gifScript.onerror = () => { status.textContent = "Abre con conexión a internet para exportar GIF."; };
 document.head.appendChild(gifScript);
+background.addEventListener("load", () => draw());
 draw();
