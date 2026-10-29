@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Giantuchi Animation</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <p class="eyebrow">MASCOTA ANIMADA</p>
+        <h1>Giantuchi Animation</h1>
+        <p class="subtitle">Mueve tu mascota con las flechas o con los botones y exporta el resultado.</p>
+      </header>
+
+      <section class="workspace" aria-label="Editor de animación">
+        <div class="stage-wrap">
+          <canvas id="stage" width="720" height="420" aria-label="Lienzo de animación"></canvas>
+          <div class="hint">Usa ← ↑ ↓ → · Espacio para reproducir</div>
+        </div>
+
+        <aside class="controls">
+          <div class="control-group">
+            <h2>Movimiento</h2>
+            <div class="d-pad" aria-label="Controles de dirección">
+              <button class="move-button up" data-direction="up" aria-label="Mover arriba">↑</button>
+              <button class="move-button left" data-direction="left" aria-label="Mover izquierda">←</button>
+              <button class="move-button down" data-direction="down" aria-label="Mover abajo">↓</button>
+              <button class="move-button right" data-direction="right" aria-label="Mover derecha">→</button>
+            </div>
+            <label class="range-label" for="step">Distancia: <output id="step-value">20</output> px</label>
+            <input id="step" type="range" min="5" max="60" value="20" />
+          </div>
+
+          <div class="control-group">
+            <h2>Animación</h2>
+            <div class="row">
+              <button id="play" class="primary">▶ Reproducir</button>
+              <button id="reset" class="secondary">↺ Reiniciar</button>
+            </div>
+            <label class="range-label" for="duration">Duración: <output id="duration-value">3</output> s</label>
+            <input id="duration" type="range" min="1" max="8" value="3" />
+          </div>
+
+          <div class="control-group export-group">
+            <h2>Exportar</h2>
+            <p id="status" role="status">Listo para animar.</p>
+            <button id="export" class="export">⬇ Exportar GIF</button>
+            <small>El GIF se genera en tu navegador y conserva el movimiento.</small>
+          </div>
+        </aside>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
