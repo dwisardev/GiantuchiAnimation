@@ -3,55 +3,275 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Giantuchi Animation</title>
+    <title>Giantuchi Animation 3D Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css" />
+    <!-- Three.js Import Map -->
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+    </script>
   </head>
   <body>
     <main class="app">
       <header>
-        <p class="eyebrow">MASCOTA ANIMADA</p>
+        <div class="brand-badge">
+          <span class="dot"></span>
+          <span>Giantucchi 3D Studio</span>
+        </div>
         <h1>Giantuchi Animation</h1>
-        <p class="subtitle">Mueve tu mascota con las flechas o con los botones y exporta el resultado.</p>
+        <p class="subtitle">
+          Visualizador y editor 3D en tiempo real con tu modelo GLTF original, integrado con el escenario y piso de la oficina corporativa Giantucchi.
+        </p>
       </header>
 
-      <section class="workspace" aria-label="Editor de animación">
-        <div class="stage-wrap">
-          <canvas id="stage" width="720" height="420" aria-label="Lienzo de animación"></canvas>
-          <div class="hint">Usa ← ↑ ↓ → · Espacio para reproducir</div>
+      <section class="workspace" aria-label="Estudio 3D de Animación">
+        <!-- 3D Stage -->
+        <div class="stage-wrap" id="stage-wrap">
+          <!-- Top Overlay Controls -->
+          <div class="stage-header-overlay">
+            <div class="scene-indicator">
+              <span class="pulse"></span>
+              <span id="fps-counter">Escenario 3D Activo</span>
+            </div>
+            <div class="stage-camera-tools" aria-label="Vistas de cámara">
+              <button class="tool-btn audio-btn" id="btn-top-audio" title="Reproducir / Pausar Música">
+                <span>🎵 Música</span>
+                <span class="sound-wave" id="top-sound-wave" style="display:none">
+                  <span></span><span></span><span></span>
+                </span>
+              </button>
+              <button class="tool-btn" id="btn-top-mute" title="Silenciar / Activar Sonido">🔊</button>
+              <button class="tool-btn active" data-view="front" title="Vista Frontal">Frontal</button>
+              <button class="tool-btn" data-view="full" title="Cuerpo Completo">Cuerpo</button>
+              <button class="tool-btn" data-view="close" title="Primer Plano">Rostro</button>
+              <button class="tool-btn" data-view="orbit" title="Modo Libre 360°">360°</button>
+            </div>
+          </div>
+
+          <!-- WebGL Canvas -->
+          <canvas id="webgl-canvas" aria-label="Lienzo 3D Three.js"></canvas>
+
+          <!-- Bottom Overlay Hints -->
+          <div class="stage-footer-overlay">
+            <div class="stage-hint">
+              <span>🖱️ Arrastra para rotar · 📜 Rueda para zoom · ⌨️ Flechas o WASD para caminar</span>
+            </div>
+            <div class="current-anim-pill">
+              <span id="active-anim-label">Cargando animación...</span>
+            </div>
+          </div>
+
+          <!-- Loading Overlay -->
+          <div class="loading-overlay" id="loading-overlay">
+            <div class="spinner"></div>
+            <div class="loading-text" id="loading-text">Cargando modelo 3D (modelo.gltf)...</div>
+            <div class="loading-progress">
+              <div class="loading-progress-bar" id="loading-progress-bar"></div>
+            </div>
+          </div>
         </div>
 
-        <aside class="controls">
-          <div class="control-group">
-            <h2>Movimiento</h2>
-            <div class="d-pad" aria-label="Controles de dirección">
-              <button class="move-button up" data-direction="up" aria-label="Mover arriba">↑</button>
-              <button class="move-button left" data-direction="left" aria-label="Mover izquierda">←</button>
-              <button class="move-button down" data-direction="down" aria-label="Mover abajo">↓</button>
-              <button class="move-button right" data-direction="right" aria-label="Mover derecha">→</button>
+        <!-- Controls Sidebar -->
+        <aside class="controls-sidebar">
+          <!-- Animation Controller -->
+          <div class="panel-card">
+            <div class="card-title">
+              <span>Animación 3D</span>
+              <span class="icon">✨</span>
             </div>
-            <label class="range-label" for="step">Distancia: <output id="step-value">20</output> px</label>
-            <input id="step" type="range" min="5" max="60" value="20" />
+
+            <label for="anim-select">Seleccionar Animación:</label>
+            <div class="select-wrapper">
+              <select id="anim-select" aria-label="Animaciones disponibles">
+                <option value="">Cargando animaciones...</option>
+              </select>
+            </div>
+
+            <div class="btn-row">
+              <button id="btn-play-pause" class="btn-primary">⏸ Pausar</button>
+              <button id="btn-reset-pose" class="btn-secondary" title="Reiniciar postura o ciclo">↺ Reiniciar</button>
+            </div>
+
+            <div class="range-group">
+              <div class="range-header">
+                <label for="range-speed" style="margin-bottom:0">Velocidad:</label>
+                <output id="output-speed">1.0x</output>
+              </div>
+              <input id="range-speed" type="range" min="0.2" max="2.0" step="0.1" value="1.0" />
+            </div>
+
+            <label style="margin-top: 10px;">Acciones rápidas:</label>
+            <div class="chips-grid">
+              <button class="chip-btn" data-trigger="Wave_One_Hand">👋 Saludar</button>
+              <button class="chip-btn" data-trigger="Joyful_Dance_with_Hand_Sway">🕺 Danza Alegre</button>
+              <button class="chip-btn" data-trigger="All_Night_Dance">🎉 All Night</button>
+              <button class="chip-btn" data-trigger="Cheer_with_Both_Hands_1">🙌 Celebrar</button>
+            </div>
           </div>
 
-          <div class="control-group">
-            <h2>Animación</h2>
-            <div class="row">
-              <button id="play" class="primary">▶ Reproducir</button>
-              <button id="reset" class="secondary">↺ Reiniciar</button>
+          <!-- Movement on Floor -->
+          <div class="panel-card">
+            <div class="card-title">
+              <span>Desplazamiento en el Piso</span>
+              <span class="icon">🕹️</span>
             </div>
-            <label class="range-label" for="duration">Duración: <output id="duration-value">3</output> s</label>
-            <input id="duration" type="range" min="1" max="8" value="3" />
+
+            <div class="d-pad-wrap">
+              <div class="d-pad" aria-label="Controles de dirección de movimiento">
+                <button class="move-btn btn-up" data-dir="up" aria-label="Avanzar">↑</button>
+                <button class="move-btn btn-left" data-dir="left" aria-label="Izquierda">←</button>
+                <button class="move-btn btn-down" data-dir="down" aria-label="Retroceder">↓</button>
+                <button class="move-btn btn-right" data-dir="right" aria-label="Derecha">→</button>
+              </div>
+            </div>
+
+            <div class="range-group">
+              <div class="range-header">
+                <label for="range-step" style="margin-bottom:0">Distancia por paso:</label>
+                <output id="output-step">0.25 m</output>
+              </div>
+              <input id="range-step" type="range" min="0.05" max="0.6" step="0.05" value="0.25" />
+            </div>
+
+            <div class="btn-row" style="margin-top: 12px; margin-bottom: 0;">
+              <button id="btn-reset-pos" class="btn-secondary" style="width:100%">Centrar en el Piso</button>
+            </div>
           </div>
 
-          <div class="control-group export-group">
-            <h2>Exportar</h2>
-            <p id="status" role="status">Listo para animar.</p>
-            <button id="export" class="export">⬇ Exportar GIF</button>
-            <small>El GIF se genera en tu navegador y conserva el movimiento.</small>
+          <!-- Stage & Floor Environment -->
+          <div class="panel-card">
+            <div class="card-title">
+              <span>Diseño del Escenario</span>
+              <span class="icon">🏢</span>
+            </div>
+
+            <div class="toggle-row">
+              <span class="toggle-label">Fondo Oficina Giantucchi</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-bg" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <span class="toggle-label">Piso Pulido con Reflejo</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-floor" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <span class="toggle-label">Sombras en Tiempo Real</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-shadows" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <span class="toggle-label">Luz Neón Púrpura Oficina</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-neon" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Audio & Music Controller -->
+          <div class="panel-card audio-card">
+            <div class="card-title">
+              <span>Música & Efectos de Audio</span>
+              <span class="icon">🎧</span>
+            </div>
+
+            <div class="btn-row">
+              <button id="btn-music-toggle" class="btn-primary" style="background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);">
+                <span id="music-play-icon">▶</span> <span id="music-btn-text">Iniciar Música</span>
+              </button>
+              <button id="btn-mute-toggle" class="btn-secondary" title="Silenciar todo">🔊</button>
+            </div>
+
+            <label for="track-select">Pista Musical:</label>
+            <div class="select-wrapper">
+              <select id="track-select" aria-label="Pista musical">
+                <option value="cyber_groove">🎵 Giantucchi Cyber Groove (Synthwave)</option>
+                <option value="ambient_office">🌌 Ambiente Corporativo Futurista</option>
+                <option value="disco_party">⚡ Fiesta Disco Pop (Funky Beat)</option>
+                <option value="custom">📂 Cargar mi propia canción (MP3)...</option>
+              </select>
+            </div>
+            <input type="file" id="custom-audio-input" accept="audio/*" style="display:none;" />
+
+            <div class="range-group">
+              <div class="range-header">
+                <label for="range-music-vol" style="margin-bottom:0">Volumen Música:</label>
+                <output id="output-music-vol">35%</output>
+              </div>
+              <input id="range-music-vol" type="range" min="0" max="1" step="0.05" value="0.35" />
+            </div>
+
+            <div class="range-group">
+              <div class="range-header">
+                <label for="range-sfx-vol" style="margin-bottom:0">Volumen Efectos (SFX):</label>
+                <output id="output-sfx-vol">50%</output>
+              </div>
+              <input id="range-sfx-vol" type="range" min="0" max="1" step="0.05" value="0.5" />
+            </div>
+
+            <div class="toggle-row">
+              <span class="toggle-label">Efectos de Audio (Pasos, Danzas, Saludos)</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-sfx" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Export & Snapshot -->
+          <div class="panel-card export-card">
+            <div class="card-title">
+              <span>Exportar Animación</span>
+              <span class="icon">📸</span>
+            </div>
+
+            <div class="status-box">
+              <span class="status-dot"></span>
+              <span id="status-text">Listo. Modelo 3D sincronizado.</span>
+            </div>
+
+            <div class="range-group">
+              <div class="range-header">
+                <label for="range-duration" style="margin-bottom:0">Duración GIF:</label>
+                <output id="output-duration">3.0 s</output>
+              </div>
+              <input id="range-duration" type="range" min="1.0" max="6.0" step="0.5" value="3.0" />
+            </div>
+
+            <button id="btn-export-gif" class="btn-export">
+              <span>🎬 Exportar GIF Animado</span>
+            </button>
+
+            <button id="btn-export-png" class="btn-snapshot">
+              <span>📷 Capturar Foto HD</span>
+            </button>
+
+            <small class="card-foot-note">
+              El GIF se genera cuadro a cuadro renderizando directamente el modelo 3D con el fondo y la iluminación.
+            </small>
           </div>
         </aside>
       </section>
     </main>
-    <script src="app.js"></script>
+
+    <!-- App Module -->
+    <script type="module" src="app.js"></script>
   </body>
 </html>
