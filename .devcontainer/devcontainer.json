@@ -1,0 +1,13 @@
+{
+  "name": "Giantuchi Animation 3D Studio",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "3D Studio Preview",
+      "onAutoForward": "openBrowser",
+      "requireLocalPort": false
+    }
+  },
+  "postAttachCommand": "python3 -m http.server 8080"
+}

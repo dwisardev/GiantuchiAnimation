@@ -1,0 +1,19 @@
+{
+  "name": "giantuchi-animation-3d",
+  "version": "1.0.0",
+  "description": "Giantuchi Animation 3D Studio con Three.js y Web Audio API",
+  "main": "app.js",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "dev": "python3 -m http.server 8080",
+    "serve": "python3 -m http.server 8080"
+  },
+  "keywords": [
+    "threejs",
+    "gltf",
+    "animation",
+    "web-audio"
+  ],
+  "author": "DWisarDev",
+  "license": "MIT"
+}

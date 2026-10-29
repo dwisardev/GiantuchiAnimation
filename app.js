@@ -335,11 +335,14 @@ function loadModel() {
       updateStatus(`Modelo 3D cargado (${gltf.animations?.length || 0} animaciones).`);
     },
     (xhr) => {
-      if (xhr.lengthComputable && xhr.total > 0) {
-        const percent = Math.round((xhr.loaded / xhr.total) * 100);
-        loadingProgressBar.style.width = `${percent}%`;
-        loadingText.textContent = `Cargando modelo 3D... ${percent}%`;
-      }
+      const knownTotal = 16247976;
+      const total = (xhr.lengthComputable && xhr.total > 0) ? xhr.total : knownTotal;
+      const loaded = xhr.loaded || 0;
+      const percent = Math.min(99, Math.round((loaded / total) * 100));
+      const mbLoaded = (loaded / (1024 * 1024)).toFixed(1);
+      const mbTotal = (total / (1024 * 1024)).toFixed(1);
+      loadingProgressBar.style.width = `${Math.max(8, percent)}%`;
+      loadingText.textContent = `Cargando modelo 3D... ${mbLoaded} / ${mbTotal} MB (${percent}%)`;
     },
     (error) => {
       console.error('Error loading glTF model:', error);
